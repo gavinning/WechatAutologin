@@ -1,50 +1,61 @@
 {
-  "name": "wechat-autologin",
-  "version": "1.0.0",
-  "description": "关注微信公众号并自动登录",
-  "_moduleAliases": {
-    "@": "./src"
-  },
-  "tags": [
-    "orm",
-    "typescript",
-    "koa"
+  "name": "@4a/wechat",
+  "author": "gavinning",
+  "module": "dist/wechat.esm.js",
+  "version": "0.1.0",
+  "license": "MIT",
+  "main": "dist/index.js",
+  "typings": "dist/index.d.ts",
+  "files": [
+    "dist",
+    "src"
   ],
+  "engines": {
+    "node": ">=10"
+  },
   "scripts": {
-    "dev": "nodemon",
-    "build": "rm -rf dist && tsc",
-    "pro": "npx pm2 start ecosystem.config.js --env production",
-    "restart": "pm2 restart ecosystem.config.js --env production",
-    "stop": "npx pm2 stop ecosystem.config.js"
+    "dev": "tsdx watch",
+    "build": "tsdx build",
+    "test": "tsdx test",
+    "lint": "tsdx lint",
+    "prepare": "tsdx build",
+    "size": "size-limit",
+    "analyze": "size-limit --why"
+  },
+  "husky": {
+    "hooks": {
+      "pre-commit": "tsdx lint"
+    }
+  },
+  "size-limit": [
+    {
+      "path": "dist/wechat.cjs.production.min.js",
+      "limit": "10 KB"
+    },
+    {
+      "path": "dist/wechat.esm.js",
+      "limit": "10 KB"
+    }
+  ],
+  "devDependencies": {
+    "@size-limit/preset-small-lib": "^6.0.3",
+    "@types/ioredis": "^4.27.8",
+    "@types/koa": "^2.13.4",
+    "@types/koa-bodyparser": "^4.3.3",
+    "husky": "^7.0.4",
+    "koa": "^2.13.4",
+    "size-limit": "^6.0.3",
+    "tsdx": "^0.14.1",
+    "tslib": "^2.3.1",
+    "ioredis": "^4.28.0",
+    "typescript": "^4.4.4"
   },
   "dependencies": {
     "@4a/asp": "^1.0.1",
-    "@4a/env": "^4.0.1",
-    "@types/ioredis": "^4.27.8",
-    "@types/koa-logger": "^3.1.2",
+    "@4a/helper": "^0.2.0",
     "axios": "^0.23.0",
-    "dotenv": "^10.0.0",
-    "ioredis": "^4.28.0",
-    "koa": "^2.13.4",
-    "koa-bodyparser": "^4.3.0",
-    "koa-logger": "^3.2.1",
-    "koa-router": "^10.1.1",
-    "module-alias": "^2.2.2",
-    "moment": "^2.29.1",
-    "regenerator-runtime": "^0.13.9",
-    "rmdb": "^0.3.0",
+    "rmdb": "^0.3.2",
     "tnwx": "^2.5.6",
     "uid": "^2.0.0"
-  },
-  "devDependencies": {
-    "@types/koa": "^2.13.4",
-    "@types/koa-bodyparser": "^4.3.3",
-    "@types/koa-router": "^7.4.4",
-    "@types/node": "^16.11.1",
-    "nodemon": "^2.0.13",
-    "pm2": "^5.1.2",
-    "ts-node": "^10.3.0",
-    "tsconfig-paths": "^3.11.0",
-    "typescript": "^4.4.4"
   }
 }

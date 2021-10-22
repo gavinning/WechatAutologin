@@ -1,3 +1,5 @@
+import asp from '@4a/asp'
+
 import {
     InAuthEvent,
     InAuthMpEvent,
@@ -40,7 +42,8 @@ import {
     OutImageMsg,
     OutVoiceMsg,
     OutVideoMsg,
-} from 'tnwx'
+} from '@4a/wechat'
+
 
 export default class WechatAdapter implements MsgAdapter {
     processInWxVerifyDispatchEvent(inWxVerifyDispatchEvent: InWxVerifyDispatchEvent): Promise<OutMsg> {
@@ -48,7 +51,7 @@ export default class WechatAdapter implements MsgAdapter {
     }
     async processInTextMsg(inTextMsg: InTextMsg): Promise<OutMsg> {
         
-        return this.renderOutTextMsg(inTextMsg)
+        // return this.renderOutTextMsg(inTextMsg)
 
         let outMsg: any
         let content: string = 'IJPay 让支付触手可及 \n\nhttps://gitee.com/javen205/IJPay'
@@ -192,11 +195,17 @@ export default class WechatAdapter implements MsgAdapter {
     }
 
     async processInQrCodeEvent(inQrCodeEvent: InQrCodeEvent): Promise<OutMsg> {
+        asp.debug(
+            123,
+            inQrCodeEvent.getEvent,
+            InQrCodeEvent.EVENT_INQRCODE_SUBSCRIBE,
+            InQrCodeEvent.EVENT_INQRCODE_SCAN
+        )
         if (InQrCodeEvent.EVENT_INQRCODE_SUBSCRIBE == inQrCodeEvent.getEvent) {
-            console.debug('扫码未关注：' + inQrCodeEvent.getFromUserName)
+            console.debug('扫码已关注：' + inQrCodeEvent.getFromUserName)
             return this.renderOutTextMsg(inQrCodeEvent, '感谢您的关注，二维码内容：' + inQrCodeEvent.getEventKey)
         } else if (InQrCodeEvent.EVENT_INQRCODE_SCAN == inQrCodeEvent.getEvent) {
-            console.debug('扫码已关注：' + inQrCodeEvent.getFromUserName)
+            console.debug('扫码未关注：' + inQrCodeEvent.getFromUserName)
             return this.renderOutTextMsg(inQrCodeEvent)
         } else {
             return this.renderOutTextMsg(inQrCodeEvent)

@@ -1,20 +1,16 @@
 import asp from '@4a/asp'
 import axios, { AxiosRequestConfig } from 'axios'
 
-export async function get(url: string, options?: AxiosRequestConfig<any>): Promise<any> {
-    return axios.get(url, options).then(response => response.data)
+
+export async function get<T = any>(url: string, options: AxiosRequestConfig<any> = {}) {
+    return request<T>({ method: 'GET', url, ...options })
 }
 
-export async function post(url: string, data?: any, options?: AxiosRequestConfig<any>): Promise<any> {
-    return axios.post(url, data, options).then(response => response.data)
+export async function post<T = any>(url: string, data?: any, options: AxiosRequestConfig<any> = {}) {
+    return request<T>({ method: 'POST', url, data, ...options })
 }
 
-export async function http<T = any>(options: AxiosRequestConfig) {
-    return axios(options).then(response => response.data) as Promise<T>
-}
-
-
-export async function wechatRequest<T = any>(options: AxiosRequestConfig) {
+export async function request<T = any>(options: AxiosRequestConfig) {
     return axios(options)
         .then(response => response.data)
         .then((data: any) => {
@@ -26,12 +22,7 @@ export async function wechatRequest<T = any>(options: AxiosRequestConfig) {
         }) as Promise<T>
 }
 
-export async function wechatGet<T = any>(url: string, options: AxiosRequestConfig<any> = {}) {
-    return wechatRequest<T>({ method: 'GET', url, ...options })
-}
+request.get = get
+request.post = post
 
-export async function wechatPost<T = any>(url: string, data?: any, options: AxiosRequestConfig<any> = {}) {
-    return wechatRequest<T>({ method: 'POST', url, data, ...options })
-}
-
-export default http
+export default request
