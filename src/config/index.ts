@@ -1,6 +1,5 @@
 import { format } from 'url'
 import { Redis } from 'ioredis'
-import { MsgAdapter } from 'tnwx'
 import { AxiosRequestConfig } from 'axios'
 
 
@@ -17,7 +16,6 @@ export const defaultOptions = {
  * @param appId 公众号appid
  * @param appSecret 公众号secret
  * @param appToken 公众号token
- * @param msgAdapter 公众号通用消息处理 tnwx.MsgAdapter
  * @param safemode 安全模式，默认为false，建议为false
  * @param encodingAesKey 安全模式下加密信息
  * @param debug debug模式会打印一些调试信息
@@ -25,11 +23,10 @@ export const defaultOptions = {
  * @param qrcodeTimeout 二维码有效期，默认22天，涉及到二维码复用缓存策略，如非必要不建议调整
  * @param accessTokenTimeout 公众号token缓存时间，默认100分钟
  */
-export interface Options {
+export interface BaseOptions {
     appId: string
     appSecret: string
     appToken: string
-    msgAdapter: MsgAdapter
     safemode?: boolean
     encodingAesKey?: string
     debug?: boolean

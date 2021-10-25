@@ -23,13 +23,13 @@ export new Wechat(opt: Options)
  * @param appId 公众号appid
  * @param appSecret 公众号secret
  * @param appToken 公众号token
- * @param msgAdapter 公众号通用消息处理 tnwx.MsgAdapter
  * @param safemode 安全模式，默认为false，建议为false
  * @param encodingAesKey 安全模式下加密信息
  * @param debug debug模式会打印一些调试信息
  * @param redis ioredis实例
- * @param qrcodeTimeout 二维码有效期，默认22天
+ * @param qrcodeTimeout 二维码有效期，默认22天，涉及到二维码复用缓存策略，如非必要不建议调整
  * @param accessTokenTimeout 公众号token缓存时间，默认100分钟
+ * @param MsgAdapterFactory 公众号通用消息处理工厂函数，返回:tnwx.MsgAdapter
  */
 export interface Options {
     appId: string;
@@ -42,22 +42,12 @@ export interface Options {
     redis: Redis;
     qrcodeTimeout?: number;
     accessTokenTimeout?: number;
+    MsgAdapterFactory: (wechat: Wechat) => MsgAdapter;
 }
 ```
 方法集合 **Methods**
 ```ts
-// 入口
 export declare class Wechat {
-    qrcode: QrcodeService;
-    wechat: WechatService;
-    /**
-     * 获取闲置微信公众号带参二维码
-     */
-    getFreeWechatQrcode(): Promise<{ scene_id: string; url: string; }>;
-    /**
-     * 清零二维码作业状态，重置为闲置状态
-     */
-    closeQrcodeWorking(scene_id: string): void;
     /**
      * 微信公众号消息聚合处理，包含认证和通用消息处理
      * 根据请求类型自动调用(authHandler | messageHandler)
@@ -71,45 +61,30 @@ export declare class Wechat {
      * 微信公众号消息通用处理，仅处理消息，不处理认证
      */
     messageHandler(ctx: Context): Promise<string>;
-}
-export declare class QrcodeService {
     /**
-     * 获取闲置二维码
-     * 1.优先从Free集合中查找闲置二维码
-     * 2.当没有闲置二维码时，从微信生成二维码并缓存到Loading集合
+     * 获取闲置微信公众号带参二维码
      */
-    getFree(): Promise<{ scene_id: string; url: string; }>;
+    getFreeWechatQrcode(): Promise<{ scene_id: string; url: string; }>;
     /**
-     * 关闭二维码作业状态，二维码回归闲置集合
+     * 清零二维码作业状态，重置为闲置状态
      */
-    close(scene_id: string): Promise<void>;
-}
-export declare class WechatService {
+    closeQrcodeWorking(scene_id: string): void;
     /**
-     * 获取微信公众号AccessToken
+     * 获取微信公众号AccessToken，缓存默认有效期100分钟
      * 优先从缓存获取，缓存失效则从微信获取，推荐使用此方法
      */
-    getAccessToken(): Promise<AccessTokenPayload>;
+    getAccessToken(): Promise<import("./config").AccessTokenPayload>;
     /**
-     * 获取微信公众号带参二维码，并缓存
-     * @param scene_id 场景id，可选，不填则创建新的二维码
+     * 注意！请勿频繁调用此方法，微信有调用数量限制
+     * 从微信获取微信公众号AccessToken，不经过缓存，不处理缓存
+     * 除非知道自己在做什么，否则推荐调用`getAccessToken`方法
      */
-    getQrcode(): Promise<QrcodePayload>;
+    getAccessTokenFromWechat(): Promise<import("./config").AccessTokenPayload>;
     /**
-     * 从缓存中查询微信公众号带参二维码
+     * 从缓存中查询微信公众号带参二维码元数据
      * @param scene_id 场景id，Redis缓存key必须
      */
-    getQrcodeFromRedis(scene_id: string): Promise<QrcodePayload | void>;
-    generateSceneId(): string;
-    /**
-     * 从微信获取微信公众号AccessToken，不经过缓存，不处理缓存
-     */
-    getAccessTokenFromWechat(): Promise<AccessTokenPayload>;
-    /**
-     * 从微信创建带参二维码，不经过缓存，不处理缓存
-     * @param scene_id 二维码参数：场景id，
-     */
-    createQrcodeFromWechat(scene_id: string): Promise<QrcodePayload>;
+    getQrcodeFromRedis(scene_id: string): Promise<void | import("./config").QrcodePayload>;
 }
 ```
 
@@ -140,20 +115,20 @@ Mod:@4a/wechat:accessToken:{AppId}
         Mod:@4a/wechat:accessToken:wx1234
 
 
-# 闲置二维码集合Key
+# 闲置二维码集合Key @Set
 Mod:@4a/wechat:qrcodes:free
 
-# 作业中二维码集合Key
+# 作业中二维码集合Key @Set
 Mod:@4a/wechat:qrcodes:loading
 
-# 二维码集合过期时间Key
+# 二维码集合过期时间Key @String
 Mod:@4a/wechat:qrcodes:cleanKey
 
-# 单个二维码数据存储
-Mod:@4a/wechat:qrcode:{scene_id}
+# 二维码元数据存储 @Hash
+Mod:@4a/wechat:qrcodes:hash
 
-    example:
-        Mod:@4a/wechat:qrcode:c298e9b6632
+    Key: SceneId
+    example: HGET Mod:@4a/wechat:qrcodes:hash {SceneId}
 
 ```
 

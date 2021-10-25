@@ -2,14 +2,14 @@ import asp from '@4a/asp'
 import { date } from '@4a/helper'
 import { Redis } from 'ioredis'
 import { WechatService } from './wechat'
-import { wechatApi, Options, QrcodePayload } from './config'
+import { wechatApi, BaseOptions, QrcodePayload } from './config'
 import * as RedisKey from './config/redis'
 
 
 // 缓存管理Wechat参数二维码
 // 防止超过每日次数上限=10万次
 export class QrcodeService {
-    private readonly opt: Options
+    private readonly opt: BaseOptions
     private readonly redis: Redis
     private readonly wechat: WechatService
     private readonly cleanTimeout: number
@@ -19,7 +19,7 @@ export class QrcodeService {
     private readonly hashKey = RedisKey.hashKey
     private readonly DEBUG = false // 仅用于QPS测试，测试完成及时重置为：false
 
-    constructor(opt: Options) {
+    constructor(opt: BaseOptions) {
         this.opt = opt
         this.redis = opt.redis
         this.wechat = new WechatService(this.opt)
@@ -42,9 +42,16 @@ export class QrcodeService {
      * 关闭二维码作业状态，二维码回归闲置集合
      */
     async close(scene_id: string) {
-        const qrcode = await this.wechat.getQrcodeFromRedis(scene_id)
-        if (qrcode) {
-            this.closeByQrcodeString(this.encodeQrcode(qrcode))
+        try {
+            const qrcode = await this.wechat.getQrcodeFromRedis(scene_id)
+            if (qrcode) {
+                this.closeByQrcodeString(this.encodeQrcode(qrcode))
+            }
+            return true
+        }
+        catch(err) {
+            asp.warn('CloseQrcodeWorking:', err instanceof Error ? err.message : err)
+            return false
         }
     }
 

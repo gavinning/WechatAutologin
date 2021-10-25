@@ -42,10 +42,17 @@ import {
     OutImageMsg,
     OutVoiceMsg,
     OutVideoMsg,
+    Wechat
 } from '@4a/wechat'
 
 
 export default class WechatAdapter implements MsgAdapter {
+    wechat: Wechat
+
+    constructor(wechat: Wechat) {
+        this.wechat = wechat
+    }
+
     processInWxVerifyDispatchEvent(inWxVerifyDispatchEvent: InWxVerifyDispatchEvent): Promise<OutMsg> {
         throw new Error('Method not implemented.')
     }

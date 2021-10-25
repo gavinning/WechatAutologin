@@ -3,16 +3,16 @@ import { uid } from 'uid'
 import { request } from './helper/http'
 import { Redis } from 'ioredis'
 import { Rmdb, Factory } from 'rmdb'
-import { wechatApi, Options, QrcodePayload, CreateQrcodePayload, AccessTokenPayload } from './config'
+import { wechatApi, BaseOptions, QrcodePayload, CreateQrcodePayload, AccessTokenPayload } from './config'
 import * as RedisKey from './config/redis'
 
 export class WechatService {
-    private readonly opt: Options
+    private readonly opt: BaseOptions
     private readonly RMDB: Rmdb
     private readonly redis: Redis
     private readonly DEBUG = false // 仅用于QPS测试，测试完成及时重置为：false
 
-    constructor(opt: Options) {
+    constructor(opt: BaseOptions) {
         this.opt = opt
         this.redis = opt.redis
         this.RMDB = Factory(opt.redis)
@@ -43,7 +43,7 @@ export class WechatService {
     }
 
     /**
-     * 从缓存中查询微信公众号带参二维码
+     * 从缓存中查询微信公众号带参二维码元数据
      * @param scene_id 场景id，Redis缓存key必须
      */
     async getQrcodeFromRedis(scene_id: string): Promise<QrcodePayload | void> {

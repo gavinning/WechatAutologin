@@ -7,7 +7,7 @@ export const wechat = new Wechat({
     appId: AppId,
     appSecret: AppSecret,
     appToken: AppToken,
-    msgAdapter: new WechatAdapter(),
     redis,
-    debug: true
+    debug: true,
+    MsgAdapterFactory: (wechat) => new WechatAdapter(wechat)
 })
